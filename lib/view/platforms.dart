@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link2bd/model/app_drawer.dart';
 import 'package:link2bd/model/memory.dart';
 
 class Platforms extends StatefulWidget {
@@ -14,35 +15,35 @@ class _PlatformsState extends State<Platforms> {
 
   final platforms = [
     {
-      'id':1,
+      'id':0,
       'title': 'Networking & Socialization',
       'icon': Icons.group,
       'image': 'assets/networking.png',
       'subtitle': 'Forge meaningful connections and expand your social horizon.'
     },
     {
-      'id':2,
+      'id':1,
       'title': 'Business & Entrepreneurship',
       'icon': Icons.business,
       'image': 'assets/business.png',
       'subtitle': 'Empower your entrepreneurial spirit and discover new business ventures.'
     },
     {
-      'id':3,
+      'id':2,
       'title': 'Marriage & Dating',
       'icon': Icons.favorite,
       'image': 'assets/marriage.png',
       'subtitle': 'Find your partner in a community of genuine connections.'
     },
     {
-      'id':4,
+      'id':3,
       'title': 'Travel & Hosting',
       'icon': Icons.travel_explore,
       'image': 'assets/travel.png',
       'subtitle': 'Unleash your wanderlust and explore destinations with local insights.'
     },
     {
-      'id':5,
+      'id':4,
       'title': 'Study Abroad & Scholarship',
       'icon': Icons.school,
       'image': 'assets/study.png',
@@ -57,6 +58,7 @@ class _PlatformsState extends State<Platforms> {
 
 
     return Scaffold(
+      drawer: AppDrawer(currentRouteName: '/platforms',),
       appBar: AppBar(
         title: Text('Choose a Platform'),
       ),
@@ -115,6 +117,7 @@ class _PlatformsState extends State<Platforms> {
                               trailing: ElevatedButton(
                                 onPressed: () {
                                   platformIdSelected = platform['id'] as int;
+                                  memory.platformId = platformIdSelected;
                                   showAlertDialog(context, 'Joining ${platform['title']} \n Remember only first one is free.');
                                 },
                                 style: ElevatedButton.styleFrom(backgroundColor: primaryColor),

@@ -78,8 +78,9 @@ class _SignUpState extends State<SignUp> {
               addressInfo(),
               bioInfo()
             ],
+            next: Text('Next'),
             done: Text('Submit'),
-            showNextButton: false,
+            showNextButton: true,
             onDone: (){
               Navigator.pushReplacementNamed(context, '/platforms');
               return;

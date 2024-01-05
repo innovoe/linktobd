@@ -52,6 +52,7 @@ class _InitRouterState extends State<InitRouter> {
               ElevatedButton(
                 child: Text('Let\'s Go!'),
                 onPressed: () async{
+                  // Navigator.pushReplacementNamed(context, '/my_platforms');
                   LoginModel loginModel = LoginModel();
                   int id = await loginModel.getId();
                   if(id == 0){
