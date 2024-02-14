@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link2bd/model/app_drawer.dart';
 import 'package:link2bd/model/memory.dart';
@@ -10,14 +11,15 @@ import 'package:link2bd/model/photo_upload.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
-class CreatePost extends StatefulWidget {
-  CreatePost({Key? key}) : super(key: key);
+class EditPost extends StatefulWidget {
+  final Map<String, dynamic> feedData;
+  EditPost({Key? key, required this.feedData}) : super(key: key);
 
   @override
-  _CreatePostState createState() => _CreatePostState();
+  _EditPostState createState() => _EditPostState();
 }
 
-class _CreatePostState extends State<CreatePost> {
+class _EditPostState extends State<EditPost> {
   final introKey = GlobalKey<IntroductionScreenState>();
 
   TextEditingController postTextController = TextEditingController();
@@ -26,6 +28,26 @@ class _CreatePostState extends State<CreatePost> {
 
   List<File> photos = [];
   bool buttonDisabled = false;
+
+  final String imagePathPrefix = 'https://linktobd.com/assets/user_uploads/';
+  List<String> photoUrls = [];
+  String toBeDeleted = '';
+
+  String uuid = '';
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    postTextController.text = widget.feedData['post_text'];
+    uuid = widget.feedData['uuid'];
+    for (var photoMap in widget.feedData['photos']) {
+      String? photo = photoMap.values.first;
+      if (photo != null) {
+        photoUrls.add(photo);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +102,9 @@ class _CreatePostState extends State<CreatePost> {
                   ],
                 ),
                 SizedBox(height: 20),
+                Column(
+                  children: photoUrls.map((imageUrl) => photoView(imageUrl)).toList(),
+                ),
                 // ImageGrid(imageFiles: photos,),
                 Column(
                   children: photos.map((imageFile) => Container(padding: EdgeInsets.all(10), child: Image.file(imageFile)),).toList(),
@@ -108,12 +133,12 @@ class _CreatePostState extends State<CreatePost> {
                           }
 
                           var formData = FormData();
-                          Uuid uuid = Uuid();
                           formData.fields.addAll([
                             MapEntry("token", memory.token.toString()),
                             MapEntry("platform_id", memory.platformId.toString()),
                             MapEntry("post_text", postTextController.text),
-                            MapEntry("uuid", uuid.v1().toString()),
+                            MapEntry("uuid", uuid),
+                            MapEntry("to_be_deleted", toBeDeleted),
                           ]);
 
                           for (var imageFile in imageList) {
@@ -125,15 +150,14 @@ class _CreatePostState extends State<CreatePost> {
                           var dio = Dio();
                           try{
                             Response response = await dio.post(
-                              'https://linktobd.com/appapi/create_post',
+                              'https://linktobd.com/appapi/edit_post',
                               data: formData,
                             );
                             var respond = response.data;
+                            print(respond);
                             if (response.statusCode == 200) {
                               if (mounted) {
                                 if (respond['success'].toString() == 'yes') {
-                                  // Navigator.pop(context);
-                                  // output = Text('post saved.');
                                   showAlertDialog(context, 'Post Saved Successfully.', 'Saved');
                                   Future.delayed(const Duration(seconds: 1)).then((val) {
                                     Navigator.pushReplacementNamed(context, '/feed');
@@ -142,8 +166,9 @@ class _CreatePostState extends State<CreatePost> {
                               }
                             }
                           }catch (e) {
+                            print(e);
                             if(mounted) {
-                              showAlertDialog(context, 'An error occurred. Please try again. ${e.toString()}', '');
+                              showAlertDialog(context, 'An error occurred. Please try again. ${e.toString()}', 'Oops!');
                             }
                           }
                         }
@@ -156,6 +181,30 @@ class _CreatePostState extends State<CreatePost> {
       ),
     );
   }
+
+  Widget photoView(String imageUrl){
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Stack(
+        children: [
+          CachedNetworkImage(imageUrl: imagePathPrefix + imageUrl),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              icon: Icon(Icons.close, color: Colors.white),
+              onPressed: () {
+                photoUrls.remove(imageUrl);
+                toBeDeleted = (toBeDeleted == '') ? imageUrl : '$toBeDeleted,$imageUrl';
+                setState(() {});
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   String getFileExtension(File file) {
     // Extracting the file name from the path

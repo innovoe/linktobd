@@ -16,12 +16,12 @@ class LoginModel{
     File idFile = File(idFilePath);
     if(await idFile.exists()){
       String data = await idFile.readAsString();
-      memory.userId = int.parse(data);
+      memory.token = int.parse(data);
       return int.parse(data);
     }else{ //file doesn't exist
       idFile.create(recursive: true);
       idFile.writeAsString('0');
-      memory.userId = 0;
+      memory.token = 0;
       return 0;
     }
   }
@@ -43,7 +43,7 @@ class LoginModel{
       }else if(webResponse.body == '0'){
         return 'Wrong username or password';
       }else{
-        memory.userId = int.parse(webResponse.body);
+        memory.token = int.parse(webResponse.body);
         saveId();
         return 'Login Success';
       }
@@ -56,7 +56,7 @@ class LoginModel{
     Directory appDir = await getApplicationDocumentsDirectory();
     String idFilePath =  '${appDir.path}/id.txt';
     File idFile = File(idFilePath);
-    idFile.writeAsString(memory.userId.toString());
+    idFile.writeAsString(memory.token.toString());
   }
 
 }

@@ -1,9 +1,11 @@
 import 'dart:io';
-
+import 'package:link2bd/model/login_model.dart';
+import 'package:link2bd/model/memory.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
+import 'package:link2bd/model/dynamic_dropdown.dart';
 import 'package:link2bd/model/photo_upload.dart';
 import 'package:dio/dio.dart';
 
@@ -23,23 +25,14 @@ class _SignUpState extends State<SignUp> {
   TextEditingController phoneController = TextEditingController();
 
   TextEditingController streetAddressController = TextEditingController();
-  TextEditingController cityController = TextEditingController();
-  TextEditingController stateController = TextEditingController();
+  // TextEditingController cityController = TextEditingController();
+  // TextEditingController stateController = TextEditingController();
   TextEditingController postalZipController = TextEditingController();
-  TextEditingController countryController = TextEditingController();
-
-  List<String> genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
-  List<String> preferenceOptions = ['Men', 'Women', 'Everyone'];
-
+  // TextEditingController countryController = TextEditingController();
+  String? countrySelected;
+  String? stateSelected;
+  String? citySelected;
   String? selectedGender;
-  String? selectedPreference;
-  List<String> relationshipGoals = [
-    'Friendship',
-    'Casual Dating',
-    'Long-term Relationship',
-    'Marriage'
-  ];
-  String? selectedGoal;
 
   TextEditingController bioController = TextEditingController();
   TextEditingController occupationController = TextEditingController();
@@ -51,15 +44,6 @@ class _SignUpState extends State<SignUp> {
 
   File? selectedImage;
   DateTime dateOfBirth = DateTime(2000, 1, 1);
-  List<String> heightOptions = [
-    '4\'0"', '4\'1"', '4\'2"', '4\'3"', '4\'4"', '4\'5"',
-    '4\'6"', '4\'7"', '4\'8"', '4\'9"', '4\'10"', '4\'11"',
-    '5\'0"', '5\'1"', '5\'2"', '5\'3"', '5\'4"', '5\'5"',
-    '5\'6"', '5\'7"', '5\'8"', '5\'9"', '5\'10"', '5\'11"',
-    '6\'0"', '6\'1"', '6\'2"', '6\'3"', '6\'4"', '6\'5"',
-    '6\'6"', '6\'7"', '6\'8"', '6\'9"', '6\'10"', '6\'11"',
-    '7\'0"'
-  ];
   String? selectedHeight;
 
   bool isLoading = false;
@@ -82,8 +66,8 @@ class _SignUpState extends State<SignUp> {
             done: Text('Submit'),
             showNextButton: true,
             onDone: (){
-              Navigator.pushReplacementNamed(context, '/platforms');
-              return;
+              // Navigator.pushReplacementNamed(context, '/platforms');
+              // return;
               if(validate()){
                 signUp(context);
               }
@@ -118,9 +102,9 @@ class _SignUpState extends State<SignUp> {
                   child: Text('Take a new photo'),
                   onPressed: () async{
                     PhotoUpload photoUpload = PhotoUpload();
-                    XFile? pickedFile = await photoUpload.pickImage(ImageSource.camera);
+                    File pickedFile = await photoUpload.pickImage(ImageSource.camera);
                     setState((){
-                      selectedImage = File(pickedFile!.path);
+                      selectedImage = File(pickedFile.path);
                     });
                   },
                 ),
@@ -128,9 +112,9 @@ class _SignUpState extends State<SignUp> {
                   child: Text('Upload from gallery'),
                   onPressed: () async{
                     PhotoUpload photoUpload = PhotoUpload();
-                    XFile? pickedFile = await photoUpload.pickImage(ImageSource.gallery);
+                    File pickedFile = await photoUpload.pickImage(ImageSource.gallery);
                     setState((){
-                      selectedImage = File(pickedFile!.path);
+                      selectedImage = File(pickedFile.path);
                     });
                   },
                 ),
@@ -145,7 +129,7 @@ class _SignUpState extends State<SignUp> {
 
   PageViewModel birthDate() {
     return PageViewModel(
-      title: "Age and Height *",
+      title: "Aesthetic *",
       bodyWidget: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 5),
@@ -169,22 +153,24 @@ class _SignUpState extends State<SignUp> {
               SizedBox(height: 20,),
               Text("Height: *", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               SizedBox(height: 10,),
-              DropdownButtonFormField<String>(
-                value: selectedHeight,
-                items: heightOptions.map((String height) {
-                  return DropdownMenuItem<String>(
-                    value: height,
-                    child: Text(height),
-                  );
-                }).toList(),
-                onChanged: (value) {
+              DynamicDropdown(
+                url: 'https://linktobd.com/appapi/dropdown/heights/measure',
+                onSelected: (value){
                   setState(() {
-                    selectedHeight = value!;
+                    selectedHeight = value.toString();
                   });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
+                }
+              ),
+              SizedBox(height: 20,),
+              Text("Gender: *", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              SizedBox(height: 10,),
+              DynamicDropdown(
+                  url: 'https://linktobd.com/appapi/dropdown/genders/title/',
+                  onSelected: (value){
+                    setState(() {
+                      selectedGender = value.toString();
+                    });
+                  }
               ),
             ],
           ),
@@ -238,63 +224,6 @@ class _SignUpState extends State<SignUp> {
                   labelText: 'Phone *',
                 ),
               ),
-              SizedBox(height: 30,),
-              DropdownButtonFormField<String>(
-                value: selectedGender,
-                items: genderOptions.map((String gender) {
-                  return DropdownMenuItem<String>(
-                    value: gender,
-                    child: Text(gender),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedGender = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Gender *',
-                ),
-              ),
-              SizedBox(height: 20,),
-              DropdownButtonFormField<String>(
-                value: selectedPreference,
-                items: preferenceOptions.map((String preference) {
-                  return DropdownMenuItem<String>(
-                    value: preference,
-                    child: Text(preference),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedPreference = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Gender Preference',
-                ),
-              ),
-              SizedBox(height: 20,),
-              DropdownButtonFormField<String>(
-                value: selectedGoal,
-                items: relationshipGoals.map((String goal) {
-                  return DropdownMenuItem<String>(
-                    value: goal,
-                    child: Text(goal),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedGoal = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Relationship Goal',
-                ),
-              ),
             ],
           ),
         ),
@@ -311,7 +240,47 @@ class _SignUpState extends State<SignUp> {
       bodyWidget: Container(
         padding: EdgeInsets.symmetric(horizontal: 5),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 20,),
+            Text("Country: *", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            SizedBox(height: 10,),
+            DynamicDropdown(
+                url: 'https://linktobd.com/appapi/dropdown/countries/name/',
+                onSelected: (value){
+                  setState(() {
+                    countrySelected = value.toString();
+                    stateSelected = null; // Reset selected state
+                    citySelected = null; // Reset selected city, if dependent on state
+                  });
+                }
+            ),
+            if(countrySelected != null) SizedBox(height: 20),
+            if(countrySelected != null) Text("State: *", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            if(countrySelected != null) SizedBox(height: 10,),
+            if(countrySelected != null) DynamicDropdown(
+                key: ValueKey(countrySelected),
+                url: 'https://linktobd.com/appapi/dropdown/states/name/country_id/$countrySelected',
+                onSelected: (value){
+                  setState(() {
+                    stateSelected = value.toString();
+                    citySelected = null;
+                  });
+                }
+            ),
+            if(stateSelected != null) SizedBox(height: 20),
+            if(stateSelected != null) Text("City: *", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            if(stateSelected != null) SizedBox(height: 10,),
+            if(stateSelected != null) DynamicDropdown(
+                key: ValueKey(stateSelected),
+                url: 'https://linktobd.com/appapi/dropdown/cities/name/state_id/$stateSelected',
+                onSelected: (value){
+                  setState(() {
+                    citySelected = value.toString();
+                  });
+                }
+            ),
+            SizedBox(height: 20,),
             TextField(
               controller: streetAddressController,
               decoration: InputDecoration(
@@ -321,34 +290,10 @@ class _SignUpState extends State<SignUp> {
             ),
             SizedBox(height: 20,),
             TextField(
-              controller: cityController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'City *',
-              ),
-            ),
-            SizedBox(height: 20,),
-            TextField(
-              controller: stateController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'State/Province *',
-              ),
-            ),
-            SizedBox(height: 20,),
-            TextField(
               controller: postalZipController,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Postal/ZIP Code *',
-              ),
-            ),
-            SizedBox(height: 20,),
-            TextField(
-              controller: countryController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Country *',
               ),
             ),
           ],
@@ -497,14 +442,14 @@ class _SignUpState extends State<SignUp> {
     }
 
     // Validate city
-    if (cityController.text.isEmpty) {
+    if (citySelected == null) {
       showAlertDialog(context, 'City is mandatory.');
       introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate state
-    if (stateController.text.isEmpty) {
+    if (stateSelected == null) {
       showAlertDialog(context, 'State is mandatory.');
       introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
@@ -518,7 +463,7 @@ class _SignUpState extends State<SignUp> {
     }
 
     // Validate country
-    if (countryController.text.isEmpty) {
+    if (countrySelected == null) {
       showAlertDialog(context, 'Country is mandatory.');
       introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
@@ -552,19 +497,6 @@ class _SignUpState extends State<SignUp> {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   void signUp(BuildContext context) async {
     setState(() {
       isLoading = true;
@@ -572,39 +504,45 @@ class _SignUpState extends State<SignUp> {
     // Construct the data
     FormData formData = FormData.fromMap({
       'photo': selectedImage != null ? await MultipartFile.fromFile(selectedImage!.path) : null,
-      'fullname': fullNameController.text,
+      'name': fullNameController.text,
       'nickname': nickNameController.text,
       'email': emailController.text,
       'dateofbirth': dateOfBirth.toIso8601String(),
-      'height': selectedHeight,
+      'height_id': selectedHeight,
       'phone': phoneController.text,
       'gender_id': selectedGender, // Assuming gender_id is the actual gender value
-      'gender_pref_id': selectedPreference, // Adjust if needed
-      'rel_goal_id': selectedGoal, // Adjust if needed
       'short_bio': bioController.text,
       'occupation': occupationController.text,
       'education': educationController.text,
-      'religion_id': religionController.text, // Adjust if this is an ID
+      'religion': religionController.text,
+      'ethnicity': ethnicityController.text,
+      'hobbies': hobbiesController.text,
       'street_addr': streetAddressController.text,
-      'city': cityController.text,
-      'state': stateController.text,
+      'city_id': citySelected,
+      'state_id': stateSelected,
       'zip_code': postalZipController.text,
-      'country_id': countryController.text, // Adjust if this is an ID
+      'country_id': countrySelected
     });
 
     var dio = Dio();
     try {
       Response response = await dio.post(
-        'https://linktobd.com/appapi/user_sign_up',
+        'https://linktobd.com/appapi/sign_up',
         data: formData,
       );
 
-      print(response.data);
-
+      var respond = response.data;
       if (response.statusCode == 200) {
         if(mounted){
-          showAlertDialog(context, 'Successfully registered!', 'Congratulations!');
-          // Navigator.pushReplacementNamed(context, '/platforms');
+          if(respond['success'].toString() == 'yes'){
+            showAlertDialog(context, 'Successfully registered!', 'Congratulations!');
+            memory.token = int.parse(respond['token']);
+            LoginModel loginModel = LoginModel();
+            await loginModel.saveId();
+            Future.delayed(const Duration(seconds: 2)).then((val) {
+              Navigator.pushReplacementNamed(context, '/create_password');
+            });
+          }
         }
       } else {
         if(mounted) {
@@ -612,9 +550,8 @@ class _SignUpState extends State<SignUp> {
         }
       }
     } catch (e) {
-      print(e);
       if(mounted) {
-        showAlertDialog(context, 'An error occurred. Please try again.');
+        showAlertDialog(context, 'An error occurred. Please try again. ${e.toString()}');
       }
     }
     setState(() {

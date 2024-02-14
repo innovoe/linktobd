@@ -2,6 +2,8 @@ import 'package:link2bd/model/login_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:link2bd/model/memory.dart';
+import 'package:link2bd/model/notifiation_services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 
@@ -23,7 +25,8 @@ class _InitRouterState extends State<InitRouter> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
+    NotificationServices notificationServices = NotificationServices();
+    notificationServices.requestNotificationPermission();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       _navigateTo();
     });
@@ -58,7 +61,7 @@ class _InitRouterState extends State<InitRouter> {
                   if(id == 0){
                     Navigator.pushReplacementNamed(context, '/login');
                   }else{
-                    Navigator.pushReplacementNamed(context, '/home');
+                    Navigator.pushReplacementNamed(context, '/my_platforms');
                   }
                 }
               )
@@ -69,14 +72,22 @@ class _InitRouterState extends State<InitRouter> {
   }
 
   void _navigateTo() async{
+
     if(await Permission.location.request().isGranted){
       if(await Geolocator.isLocationServiceEnabled()){
         try {
-          var response = await Dio().get('https://linktobd.com/appapi/check_con');
-          setState(() {
-            message = response.data.toString();
-            locked = false;
+          Dio dio = Dio();
+          final formData = FormData.fromMap({
+            'token': memory.token
           });
+          Response response = await dio.post(
+              'https://linktobd.com/appapi/check_con',
+              data: formData
+          );
+          var respond =  response.data;
+          message = respond['success'].toString();
+          locked = false;
+          setState(() {});
         } catch (e) {
           setState(() {
             message = 'Internet Connection Down. $e.';

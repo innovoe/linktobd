@@ -11,7 +11,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextEditingController nameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  String output = '';
+  Widget output = Text('');
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +30,7 @@ class _LoginState extends State<Login> {
               Container(
                   alignment: Alignment.center,
                   padding: EdgeInsets.all(10),
-                  child: Text(
-                    output,
-                    style: TextStyle(fontSize: 16),
-                  )
+                  child: output
               ),
               Container(
                   alignment: Alignment.center,
@@ -71,21 +68,30 @@ class _LoginState extends State<Login> {
                   child: ElevatedButton(
                     child: Text('Login'),
                     onPressed: () async {
+                      setState(() {
+                        output = CircularProgressIndicator();
+                      });
                       if(nameController.text.isEmpty || passwordController.text.isEmpty){
                         setState(() {
-                          output = 'Please fill up both the phone and password field to log in.';
+                          output = Text('Please fill up both the phone and password field to log in.');
                         });
                       }else{
                         LoginModel loginModel = LoginModel();
                         String loginReturn = await loginModel.appLogin(nameController.text, passwordController.text);
                         setState(() {
-                          output = loginReturn;
+                          output = Text(loginReturn);
                         });
                         if(loginReturn == 'Login Success'){
-                          Navigator.pushReplacementNamed(context, '/home');
+                          setState(() {
+                            output = Text(loginReturn);
+                          });
+                          Navigator.pushReplacementNamed(context, '/my_platforms');
+                        }else{
+                          setState(() {
+                            output = Text('Login Failed');
+                          });
                         }
                       }
-
                     },
                   )
               ),

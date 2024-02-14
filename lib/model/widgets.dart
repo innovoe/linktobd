@@ -32,3 +32,44 @@ Widget topMenuItem(BuildContext context, String title, String routeName, [bool s
     ),
   );
 }
+
+void showAlertDialog(BuildContext context, String message, [String title = '']) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: title == '' ? Text('Validation Error') : Text(title),
+      content: Text(message),
+      actions: <Widget>[
+        TextButton(
+          child: Text('Okay'),
+          onPressed: () {
+            Navigator.of(ctx).pop(); // Close the alert dialog
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+
+void settingButtonAlert(BuildContext context, List<Widget> widgets, {double containerHeight = 100}) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      content: Container(
+        height: containerHeight,
+        child: Column(
+          children: widgets,
+        ),
+      ),
+      // actions: <Widget>[
+      //   TextButton(
+      //     child: Text('close'),
+      //     onPressed: () {
+      //       Navigator.of(ctx).pop(); // Close the alert dialog
+      //     },
+      //   ),
+      // ],
+    ),
+  );
+}

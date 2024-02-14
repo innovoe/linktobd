@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link2bd/model/user_model.dart';
 
 class AppDrawer extends StatelessWidget {
   final String currentRouteName;
@@ -7,6 +8,8 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    UserModel userModel = UserModel();
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -15,12 +18,12 @@ class AppDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
             ),
-            child: Text(
-              'User',
-              style: TextStyle(
-                color: Theme.of(context).primaryTextTheme.bodyLarge?.color,
-                fontSize: 24,
-              ),
+            child: Column(
+              children: [
+                userModel.userPhoto(context),
+                SizedBox(height: 10,),
+                userModel.userName(context)
+              ],
             ),
           ),
           _buildDrawerItem(context, Icons.person, 'My Profile', '/my_profile'),
