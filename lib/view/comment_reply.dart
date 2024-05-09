@@ -4,9 +4,13 @@ import 'package:link2bd/model/memory.dart';
 import 'package:link2bd/model/comment_card.dart';
 import 'package:link2bd/model/app_drawer.dart';
 import 'package:link2bd/model/reply_card.dart';
+import 'package:link2bd/view/single_post.dart';
 
 class CommentReply extends StatefulWidget {
-  const CommentReply({super.key});
+  VoidCallback setCommentState;
+  VoidCallback setFeedState;
+  static void _defaultFunction() {}
+  CommentReply({super.key, this.setCommentState = _defaultFunction, this.setFeedState = _defaultFunction});
 
   @override
   State<CommentReply> createState() => _CommentReplyState();
@@ -14,9 +18,10 @@ class CommentReply extends StatefulWidget {
 
 class _CommentReplyState extends State<CommentReply> {
   var replies = [];
-
+  UniqueKey _uniqueKey = UniqueKey();
   final TextEditingController commentController = TextEditingController();
   bool isButtonActive = false; // To control button state
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -30,7 +35,8 @@ class _CommentReplyState extends State<CommentReply> {
 
   @override
   void dispose() {
-    commentController.dispose(); // Dispose controller when widget is removed
+    commentController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -47,28 +53,32 @@ class _CommentReplyState extends State<CommentReply> {
       child: Scaffold(
         drawer: AppDrawer(currentRouteName: '/feed'),
         appBar: AppBar(
-          title: Text(memory.platformName),
-          // actions: [
-          //   TextButton(
-          //     child: Text('New Post +'),
-          //     onPressed: (){
-          //       Navigator.pushNamed(context, '/create_post');
-          //     },
-          //   )
-          // ],
+          title: Text(memory.platformName)
         ),
         body: Column(
           children: [
             SizedBox(height: 10,),
+            TextButton(
+              child: Text('Go back to Post'),
+              onPressed: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SinglePost(uuid: memory.postUuid),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 10,),
             FutureBuilder(
               future: feedModel.getSingleComment(),
               builder: (context, snapshot){
+                print(snapshot);
                 if(snapshot.hasError){
-                  print(snapshot.error);
                   return Text(snapshot.error.toString());
                 }else if(snapshot.hasData){
                   var sourceCommentData = snapshot.data;
-                  return CommentCard(commentData: sourceCommentData);
+                  return CommentCard(commentData: sourceCommentData, setCommentState: widget.setCommentState, doNotShowExtra: true);
                 }else{
                   return CircularProgressIndicator();
                 }
@@ -95,7 +105,8 @@ class _CommentReplyState extends State<CommentReply> {
                   replies = responses;
                   return Expanded(
                     child: ListView(
-                      children: replies.map((replyData) => ReplyCard(replyData: replyData)).toList(),
+                      controller: _scrollController,
+                      children: replies.map((replyData) => ReplyCard(replyData: replyData, setReplyState: setReplyState,)).toList(),
                     ),
                   );
                 }else{
@@ -147,9 +158,26 @@ class _CommentReplyState extends State<CommentReply> {
 
     var response = await feedModel.addComment(commentString, '1', memory.commentId);
     if(response['success'] == 'yes'){
-      CommentCard newComment = CommentCard(commentData: response);
+      CommentCard newComment = CommentCard(commentData: response, setCommentState: widget.setCommentState);
       replies.add(newComment);
       setState(() {});
     }
+    Future.delayed(Duration(seconds: 1), (){
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+    widget.setFeedState();
+  }
+
+  void setReplyState() {
+    double currentPosition = _scrollController.offset;
+    _uniqueKey = UniqueKey();
+    setState(() {});
+    Future.delayed(Duration(seconds: 1), (){
+      _scrollController.jumpTo(currentPosition);
+    });
   }
 }

@@ -4,15 +4,14 @@ import 'package:link2bd/model/memory.dart';
 import 'package:link2bd/model/comment_card.dart';
 import 'package:link2bd/model/app_drawer.dart';
 
-class PostComment extends StatefulWidget {
-  VoidCallback setFeedState;
-  PostComment({super.key, required this.setFeedState});
+class PostCommentDirect extends StatefulWidget {
+  const PostCommentDirect({super.key});
 
   @override
-  State<PostComment> createState() => _PostCommentState();
+  State<PostCommentDirect> createState() => _PostCommentDirectState();
 }
 
-class _PostCommentState extends State<PostComment> {
+class _PostCommentDirectState extends State<PostCommentDirect> {
   var comments = [];
   UniqueKey _uniqueKey = UniqueKey();
   final TextEditingController commentController = TextEditingController();
@@ -50,7 +49,7 @@ class _PostCommentState extends State<PostComment> {
       child: Scaffold(
         drawer: AppDrawer(currentRouteName: '/feed'),
         appBar: AppBar(
-          title: Text(memory.platformName)
+            title: Text(memory.platformName)
         ),
         body: Column(
           children: [
@@ -78,7 +77,7 @@ class _PostCommentState extends State<PostComment> {
                   return Expanded(
                     child: ListView(
                       controller: _scrollController,
-                      children: comments.map((commentData) => CommentCard(commentData: commentData, setCommentState: setCommentState, setFeedState: widget.setFeedState)).toList(),
+                      children: comments.map((commentData) => CommentCard(commentData: commentData, setCommentState: setCommentState, setFeedState: (){})).toList(),
                     ),
                   );
                 }else{
@@ -141,7 +140,6 @@ class _PostCommentState extends State<PostComment> {
         curve: Curves.easeOut,
       );
     });
-    widget.setFeedState();
   }
 
   void setCommentState() {

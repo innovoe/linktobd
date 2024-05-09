@@ -59,4 +59,52 @@ class LoginModel{
     idFile.writeAsString(memory.token.toString());
   }
 
+  Future<bool> logout() async {
+    try {
+      Directory appDir = await getApplicationDocumentsDirectory(); // Gets the application documents directory
+      List<FileSystemEntity> files = appDir.listSync(); // Lists all files and directories within
+
+      // Loop through all files and delete them
+      for (FileSystemEntity file in files) {
+        if (file is File) { // Checks if the entity is a file
+          await file.delete(); // Deletes each file
+        }
+      }
+      memory.token = -9;
+      memory.platformId = 0;
+      memory.platformName = '';
+      memory.username = '';
+      memory.postId = '';
+      memory.postUuid = '';
+      memory.commentId = '';
+      memory.photoURL = '';
+      memory.notificationNr = 0;
+      memory.newNotifications = 0;
+
+      return true;
+    } catch (e) {
+      print('Logout error: ${e.toString()}');
+      return false;
+    }
+  }
+
+  // Future<bool> logout() async {
+  //   try {
+  //     Directory appDir = await getApplicationDocumentsDirectory();
+  //     String idFilePath = '${appDir.path}/id.txt';
+  //     File idFile = File(idFilePath);
+  //     if (await idFile.exists()) {
+  //       await idFile.delete(); // Deletes the file where the token is stored.
+  //       memory.token = 0; // Resets the token in memory to 0 or any default unauthenticated value.
+  //       return true;
+  //     } else {
+  //       // The file doesn't exist, maybe the user was not logged in
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     print('Logout error: ${e.toString()}');
+  //     return false;
+  //   }
+  // }
+
 }

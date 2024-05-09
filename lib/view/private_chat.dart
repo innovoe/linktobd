@@ -1,7 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:link2bd/main.dart';
+import 'package:link2bd/model/app_drawer.dart';
+import 'package:link2bd/model/badge_appbar.dart';
 import 'package:link2bd/model/chat_model.dart';
 import 'package:link2bd/model/memory.dart';
+import 'package:link2bd/model/relative_timestamp.dart';
 
 class PrivateChat extends StatefulWidget {
   final String chatPartnerName;
@@ -19,26 +23,42 @@ class PrivateChat extends StatefulWidget {
   _PrivateChatState createState() => _PrivateChatState();
 }
 
-class _PrivateChatState extends State<PrivateChat> {
+class _PrivateChatState extends State<PrivateChat> with WidgetsBindingObserver, RouteAware {
   List<ChatMessage> messages = [];
   final TextEditingController messageController = TextEditingController();
   String messageToken = '';
   late ChatModel chatModel;
+  bool isChatModelInitialized = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if(widget.username != 'Unavailable'){
       startEngine();
     }
+    print(widget.username);
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.chatPartnerName),
+      drawer: AppDrawer(
+        currentRouteName: '/messages',
+        beforeNavigate: (){
+          if (isChatModelInitialized) {
+            chatModel.keepUpdating = false;
+            WidgetsBinding.instance.removeObserver(this);
+            routeObserver.unsubscribe(this);
+            messageController.dispose(); // Dispose the message controller
+            super.dispose();
+          }
+        },
+      ),
+      appBar: BadgeAppBar(
+        title: widget.chatPartnerName,
         actions: [
           // Displaying chat partner image in app bar
           CircleAvatar(
@@ -109,9 +129,10 @@ class _PrivateChatState extends State<PrivateChat> {
   Widget messageWidget(ChatMessage message) {
     bool isUserMessage = message.sender == 'user';
     return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8),
+      padding: const EdgeInsets.all(12),
       child: Row(
         mainAxisAlignment: isUserMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUserMessage) // Chat partner's messages at start
             CircleAvatar(
@@ -120,29 +141,38 @@ class _PrivateChatState extends State<PrivateChat> {
             ),
           Flexible( // Make Flexible a direct child of the Row
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                decoration: BoxDecoration(
-                  color: isUserMessage ? (message.sent ? Colors.blue : Colors.grey[500]) : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      message.message,
-                      style: TextStyle(color: isUserMessage ? Colors.white : Colors.black),
-                      softWrap: true, // Ensure the text wraps
-                      overflow: TextOverflow.visible, // Handle overflow visibly
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: isUserMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                    decoration: BoxDecoration(
+                      color: isUserMessage ? (message.sent ? Colors.blue : Colors.grey[500]) : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    // Text(
-                    //   message.localTime,
-                    //   style: TextStyle(color: Colors.grey, fontSize: 5),
-                    //   textAlign: TextAlign.right,
-                    // )
-                  ],
-                ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          message.message,
+                          style: TextStyle(color: isUserMessage ? Colors.white : Colors.black),
+                          softWrap: true, // Ensure the text wraps
+                          overflow: TextOverflow.visible, // Handle overflow visibly
+                        ),
+                        // Text(
+                        //   message.localTime,
+                        //   style: TextStyle(color: Colors.grey, fontSize: 10),
+                        //   textAlign: TextAlign.right,
+                        // )
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  (message.sent) ?
+                  RelativeTimestamp(timestamp: message.localTime, fontSize: 12) :
+                  Container(),
+                ],
               ),
             ),
           ),
@@ -176,11 +206,13 @@ class _PrivateChatState extends State<PrivateChat> {
         messages.insert(0, newMessage);
       }
     });
+    isChatModelInitialized = true;
     await Future.delayed(Duration(milliseconds: 10));
     setState(() {
       messageToken;
       chatModel;
     });
+    print(messageToken);
   }
 
 
@@ -192,6 +224,76 @@ class _PrivateChatState extends State<PrivateChat> {
         message.localTime = localTime;
         break; // Exit the loop after updating the message
       }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    routeObserver.unsubscribe(this);
+    messageController.dispose(); // Dispose the message controller
+    super.dispose();
+  }
+
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (isChatModelInitialized) {
+      if (state == AppLifecycleState.resumed) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          checkAndUpdateModel();
+        });
+      } else {
+        chatModel.keepUpdating = false;
+      }
+    }
+  }
+
+  void checkAndUpdateModel() {
+    debugPrint("Checking if current: ${ModalRoute.of(context)?.isCurrent}");
+    if (isChatModelInitialized) {
+      if (ModalRoute
+          .of(context)
+          ?.isCurrent ?? false) {
+        chatModel.keepUpdating = true;
+      } else {
+        chatModel.keepUpdating = false;
+      }
+    }
+  }
+
+  @override
+  void didPush() {
+    debugPrint("didPush - Route was pushed");
+    checkAndUpdateModel();
+  }
+
+  @override
+  void didPopNext() {
+    debugPrint("didPopNext - Came back to this route");
+    checkAndUpdateModel();
+  }
+
+  @override
+  void didPop() {
+    debugPrint("didPop - Route was popped");
+    if (isChatModelInitialized) {
+      chatModel.keepUpdating = false;
+    }
+  }
+
+  @override
+  void didPushNext() {
+    debugPrint("didPushNext - New route pushed");
+    if (isChatModelInitialized) {
+      chatModel.keepUpdating = false;
     }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:link2bd/model/data_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:link2bd/model/memory.dart';
 import 'package:http/http.dart' as http;
@@ -18,12 +19,13 @@ class UserModel{
     if(memory.username == ''){
       try {
         FormData formData = FormData.fromMap({'token' : memory.token});
-        Dio dio = Dio();
-        Response response = await dio.post(
-          'https://linktobd.com/appapi/user_profile',
-          data: formData,
+        DataModel dataModel = DataModel();
+        var respond = await dataModel.getJSONData(
+            'https://linktobd.com/appapi/user_profile',
+            formData,
+            'user_profile_data'
         );
-        var respond = response.data;
+
         String name = respond['nickname'];
         String photo = respond['photo'];
         memory.username = name;
@@ -87,11 +89,13 @@ class UserModel{
     final formData = FormData.fromMap({
       'token': memory.token
     });
-    Response response = await dio.post(
-        'https://linktobd.com/appapi/get_user_platforms',
-        data: formData
-    );
-    return response.data;
+    DataModel dataModel = DataModel();
+    var response = await dataModel.getJSONData('https://linktobd.com/appapi/get_user_platforms', formData, 'user_platform_data');
+    // Response response = await dio.post(
+    //     'https://linktobd.com/appapi/get_user_platforms',
+    //     data: formData
+    // );
+    return response;
   }
 
   Widget userPlatformWidget(BuildContext context){
@@ -127,7 +131,7 @@ class UserModel{
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Card(
-                        color: primaryColor,
+                        color: (index % 2 == 0) ? primaryColor : Colors.green[400],
                         elevation: 2,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -164,15 +168,16 @@ class UserModel{
 
 
   Future<dynamic> getAllPlatforms() async{
-    Dio dio = Dio();
     final formData = FormData.fromMap({
       'token': memory.token
     });
-    Response response = await dio.post(
-        'https://linktobd.com/appapi/get_all_platforms',
-        data: formData
+    DataModel dataModel = DataModel();
+    var response = await dataModel.getJSONData(
+      'https://linktobd.com/appapi/get_all_platforms',
+      formData,
+      'all_platforms_data'
     );
-    return response.data;
+    return response;
   }
 
   Widget listPlatformWidget(BuildContext context){
@@ -234,7 +239,7 @@ class UserModel{
                                 memory.platformId = int.parse(platform['id']);
                                 Navigator.pushNamed(context, '/platform_home');
                               },
-                              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400]),
                               child: Text('Join'),
                             ),
                           ),
@@ -271,18 +276,78 @@ class UserModel{
   }
 
   Future<dynamic> userProfileInfo() async{
-    Dio dio = Dio();
     final formData = FormData.fromMap({
       'token': memory.token
     });
-    Response response = await dio.post(
+    DataModel dataModel = DataModel();
+    var respond = await dataModel.getJSONData(
         'https://linktobd.com/appapi/user_profile',
-        data: formData
+        formData,
+        'user_profile_data'
     );
-    return response.data;
+    return respond;
+  }
+
+  Widget detailCard(String title, String value, IconData icon) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: Colors.purple),
+        title: Text(title),
+        subtitle: Text(value ?? 'Not available'),
+      ),
+    );
   }
 
   Widget userProfileData(BuildContext context){
+    return FutureBuilder(
+      future: userProfileInfo(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          var uData = snapshot.data;
+          return SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Container(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 10,),
+                      CircleAvatar(
+                        radius: 70,  // Increased size
+                        backgroundImage: NetworkImage('https://linktobd.com/assets/user_dp/${uData['photo']}'),
+                        backgroundColor: Colors.transparent,
+                      ),
+                      SizedBox(height: 8),
+                      Text(uData['name'], style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                      Text(uData['short_bio'] ?? '', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                      SizedBox(height: 10,),
+                    ],
+                  ),
+                ),
+                AnimatedSwitcher(  // Adding an animation for switching between details
+                  duration: Duration(milliseconds: 500),
+                  child: ListView(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    children: <Widget>[
+                      detailCard('Email', uData['email'], Icons.email),
+                      detailCard('Phone', uData['phone'], Icons.phone),
+                      detailCard('Date of Birth', uData['dateofbirth'], Icons.cake),
+                      detailCard('Occupation', uData['occupation'], Icons.work),
+                      detailCard('Joined', uData['created'], Icons.calendar_today),
+                      // More details can be added here
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    );
     return FutureBuilder(
       future: userProfileInfo(),
       builder: (context, snapshot){
@@ -388,6 +453,73 @@ class UserModel{
     String idFilePath =  '${appDir.path}/id.txt';
     File idFile = File(idFilePath);
     idFile.writeAsString(memory.token.toString());
+  }
+
+  Future<int> notificationNumberOfRows() async{
+    FormData formData = FormData.fromMap({'token' : memory.token});
+    Dio dio = Dio();
+    var responses = await dio.post(
+      'https://linktobd.com/appapi/get_notification_nr',
+      data: formData,
+    );
+    var response = responses.data;
+    int numberOfRows = int.parse(response['nr'].toString());
+    return numberOfRows;
+  }
+
+  Future<int> getNotificationsNumberOfRowsLocalFile() async {
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String idFilePath = '${appDir.path}/notification_nr.txt';
+    File idFile = File(idFilePath);
+    if(await idFile.exists()){
+      String data = await idFile.readAsString();
+      memory.notificationNr = int.parse(data);
+      return int.parse(data);
+    }else{ //file doesn't exist
+      idFile.create(recursive: true);
+      idFile.writeAsString('0');
+      memory.notificationNr = 0;
+      return 0;
+    }
+  }
+
+  Future<void> saveNotificationsNumberOfRowsLocalFile() async{
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String idFilePath =  '${appDir.path}/notification_nr.txt';
+    File idFile = File(idFilePath);
+    await idFile.writeAsString(memory.notificationNr.toString());
+  }
+
+  Future<List<Map<String, dynamic>>> notificationsOnline() async{
+    FormData formData = FormData.fromMap({'token' : memory.token});
+    Dio dio = Dio();
+    var responses = await dio.post(
+      'https://linktobd.com/appapi/get_notifications',
+      data: formData,
+    );
+
+    List<Map<String, dynamic>> notifications = [];
+    for (var response in responses.data) {
+      var notification = {
+        'username': response['username'].toString(), // adjusted key to match
+        'user_photo': response['user_photo'].toString(),
+        'text': response['text'].toString(),
+        'time': response['time'].toString(),
+        'tablename': response['tablename'].toString(),
+        'user_id': response['user_id'].toString(),
+        'module': response['module'].toString(),
+        'post_id': response['post_id'].toString(),
+        'post_uuid': response['post_uuid'].toString(),
+        'platform_id': response['platform_id'].toString(),
+        'platform_name': response['platform_name'].toString(),
+        'comment_id': response['comment_id'].toString(),
+        'reply_id': response['reply_id'].toString(),
+      };
+      notifications.add(notification);
+    }
+    // List<Map<String, dynamic>> feedLocal = feeds;
+    // await saveFeedLocal(feedLocal);
+    return notifications;
   }
 
 }

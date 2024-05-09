@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:link2bd/model/app_drawer.dart';
+import 'package:link2bd/model/badge_appbar.dart';
 import 'package:link2bd/model/custom_page_route_animator.dart';
 import 'package:link2bd/model/memory.dart';
 import 'package:link2bd/model/people_model.dart';
@@ -54,7 +55,7 @@ class _BrowsePeopleState extends State<BrowsePeople> {
         onTap: (){},
         onVerticalDragUpdate: (details){
           if(details.delta.dy > 0){
-            showAlertDialog(context, 'down.', 'dragged!');
+            // showAlertDialog(context, 'down.', 'dragged!');
           }else{
             // showAlertDialog(context, 'up.', 'dragged!');
             Navigator.of(context).push(
@@ -81,9 +82,7 @@ class _BrowsePeopleState extends State<BrowsePeople> {
         },
         child: Scaffold(
           drawer: AppDrawer(currentRouteName: '/feed'),
-          appBar: AppBar(
-            title: Text(memory.platformName),
-          ),
+          appBar: BadgeAppBar(title: memory.platformName),
           body: Column(
             children: [
               Row(

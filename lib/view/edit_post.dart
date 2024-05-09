@@ -1,5 +1,5 @@
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link2bd/model/app_drawer.dart';
@@ -41,11 +41,19 @@ class _EditPostState extends State<EditPost> {
     super.initState();
     postTextController.text = widget.feedData['post_text'];
     uuid = widget.feedData['uuid'];
-    for (var photoMap in widget.feedData['photos']) {
-      String? photo = photoMap.values.first;
-      if (photo != null) {
-        photoUrls.add(photo);
-      }
+    // for (var photoMap in widget.feedData['photos']) {
+    //   String? photo = photoMap.values.first;
+    //   if (photo != null) {
+    //     photoUrls.add(photo);
+    //   }
+    // }
+    final photos = widget.feedData['photos'];
+    if (photos is String) {
+      // Decode only if it's a string
+      photoUrls = json.decode(photos).map<String>((photo) => photo['photo'].toString()).toList();
+    } else if (photos is List) {
+      // Use directly if it's already a List
+      photoUrls = photos.map<String>((photo) => photo['photo'].toString()).toList();
     }
   }
 
@@ -54,7 +62,7 @@ class _EditPostState extends State<EditPost> {
     return Scaffold(
       drawer: AppDrawer(currentRouteName: '/feed'),
       appBar: AppBar(
-        title: Text('New Post'),
+        title: Text('Edit Post'),
       ),
       body: SingleChildScrollView(
         child: Container(

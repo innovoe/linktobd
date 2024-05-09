@@ -44,7 +44,8 @@ class FeedCardImages extends StatelessWidget {
     List<Widget> _buildImages() {
       switch (imageUrls.length) {
         case 1:
-          return [_buildImage(imageUrls[0], double.infinity, 0)];
+          // return [_buildImage(imageUrls[0], double.infinity, 0)];
+          return [];
         case 2:
           return [
             Row(
@@ -100,13 +101,19 @@ class FeedCardImages extends StatelessWidget {
     }
 
 
-
-    return Container(
-      height: imageUrls.length > 2 ? imageHeight * 2 : imageHeight, // fixed height
-      child: Column(
-        children: _buildImages(),
-      ),
-    );
+    if(imageUrls.length == 1){
+      return GestureDetector(
+            onTap: () => _openImageFullScreen(0),
+            child: CachedNetworkImage(imageUrl: imageUrls[0])
+        );
+    }else{
+      return Container(
+        height: imageUrls.length > 2 ? imageHeight * 2 : imageHeight, // fixed height
+        child: Column(
+          children: _buildImages(),
+        ),
+      );
+    }
   }
 }
 
