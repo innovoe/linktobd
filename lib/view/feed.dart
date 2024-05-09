@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link2bd/model/badge_appbar.dart';
 import 'package:link2bd/model/feed_model.dart';
 import 'package:link2bd/model/widgets.dart';
 import 'package:link2bd/model/memory.dart';
@@ -15,7 +16,7 @@ class Feed extends StatefulWidget {
 class _FeedState extends State<Feed> {
   int? selectedPlatform;
   int platformIdSelected = 1;
-  var feeds = [];
+  List<Map<String, dynamic>> feeds = [];
   UniqueKey _uniqueKey = UniqueKey();
   ScrollController _scrollController = ScrollController();
 
@@ -25,17 +26,28 @@ class _FeedState extends State<Feed> {
     FeedModel feedModel = FeedModel();
     return Scaffold(
       drawer: AppDrawer(currentRouteName: '/feed'),
-      appBar: AppBar(
-        title: Text(memory.platformName),
-        actions: [
-          TextButton(
-            child: Text('New Post +'),
-            onPressed: (){
-              Navigator.pushNamed(context, '/create_post');
-            },
-          )
-        ],
+      appBar: BadgeAppBar(
+          title: memory.platformName,
+          actions: [
+            TextButton(
+              child: Text('New Post +'),
+              onPressed: (){
+                Navigator.pushNamed(context, '/create_post');
+              },
+            )
+          ],
       ),
+      // appBar: AppBar(
+      //   title: Text(memory.platformName),
+      //   actions: [
+      //     TextButton(
+      //       child: Text('New Post +'),
+      //       onPressed: (){
+      //         Navigator.pushNamed(context, '/create_post');
+      //       },
+      //     )
+      //   ],
+      // ),
       body: Column(
         children: [
           Row(
@@ -46,15 +58,15 @@ class _FeedState extends State<Feed> {
             ],
           ),
           Container(color: primaryColor, height: 1,),
-          FutureBuilder(
-            key: _uniqueKey,
-            future: feedModel.getFeed(),
+          StreamBuilder(
+            stream: getFeed(),
             builder: (context, snapshot){
               if(snapshot.hasError){
-                return Text('Error');
+                return Text(snapshot.error.toString());
               }else if(snapshot.hasData){
-                var responses = snapshot.data;
+                List<Map<String, dynamic>> responses = snapshot.data!;
                 feeds = responses;
+                print(feeds);
                 return Expanded(
                   child: ListView(
                     controller: _scrollController,
@@ -69,6 +81,19 @@ class _FeedState extends State<Feed> {
         ],
       ),
     );
+  }
+
+  Stream<List<Map<String, dynamic>>> getFeed() async*{
+    FeedModel feedModel = FeedModel();
+    List<Map<String, dynamic>> offlineFeed = await feedModel.getFeedLocal();
+    yield offlineFeed;
+    try{
+      List<Map<String, dynamic>> onlineFeed = await feedModel.getFeed();
+      yield onlineFeed;
+    }catch(e){
+      print(e);
+      // yield offlineFeed;
+    }
   }
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link2bd/model/app_drawer.dart';
+import 'package:link2bd/model/badge_appbar.dart';
 import 'package:link2bd/model/memory.dart';
 import 'package:link2bd/model/user_model.dart';
 
@@ -19,9 +20,7 @@ class _PlatformsState extends State<Platforms> {
 
     return Scaffold(
       drawer: AppDrawer(currentRouteName: '/platforms',),
-      appBar: AppBar(
-        title: Text('Choose a Platform'),
-      ),
+      appBar: BadgeAppBar(title: 'Choose a Platform',),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

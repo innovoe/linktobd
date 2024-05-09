@@ -1,12 +1,16 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:link2bd/model/custom_page_route_animator.dart';
 import 'package:link2bd/model/feed_card_images.dart';
 import 'package:link2bd/model/memory.dart';
+import 'package:link2bd/model/relative_timestamp.dart';
 import 'package:link2bd/view/edit_post.dart';
 import 'package:link2bd/view/post_comment.dart';
 import 'package:link2bd/model/widgets.dart';
+import 'package:link2bd/view/single_post.dart';
 
 class FeedCard extends StatefulWidget {
   VoidCallback setFeedState;
@@ -43,11 +47,23 @@ class _FeedCardState extends State<FeedCard> {
   @override
   Widget build(BuildContext context) {
     List<String> photoUrls = [];
-    for (var photoMap in widget.feedData['photos']) {
-      String? photo = photoMap.values.first;
-      if (photo != null) {
-        photoUrls.add(imagePathPrefix + photo);
-      }
+    // for (var photoMap in widget.feedData['photos']) {
+    //   String? photo = photoMap.values.first;
+    //   if (photo != null) {
+    //     photoUrls.add(imagePathPrefix + photo);
+    //   }
+    // }
+
+    // List<dynamic> photos = json.decode(widget.feedData['photos']);
+    // photoUrls = photos.map<String>((photo) => imagePathPrefix + photo['photo']).toList();
+
+    final photos = widget.feedData['photos'];
+    if (photos is String) {
+      // Decode only if it's a string
+      photoUrls = json.decode(photos).map<String>((photo) => imagePathPrefix + photo['photo']).toList();
+    } else if (photos is List) {
+      // Use directly if it's already a List
+      photoUrls = photos.map<String>((photo) => imagePathPrefix + photo['photo']).toList();
     }
 
     return Card(
@@ -57,73 +73,79 @@ class _FeedCardState extends State<FeedCard> {
         children: [
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: CachedNetworkImageProvider(
-                    'https://linktobd.com/assets/user_dp/thumbs/${widget.feedData['user_photo']}',
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pushReplacement(
+                  CustomPageRouteAnimator(child: SinglePost(uuid: '${widget.feedData['uuid']}'), direction: 'fromTop')
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: CachedNetworkImageProvider(
+                      'https://linktobd.com/assets/user_dp/thumbs/${widget.feedData['user_photo']}',
+                    ),
+                    radius: 20.0,
                   ),
-                  radius: 20.0,
-                ),
-                SizedBox(width: 10.0),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.feedData['user_name'],
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                  SizedBox(width: 10.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.feedData['user_name'],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(widget.feedData['post_time']),
-                    ],
+                        // Text(widget.feedData['post_time']),
+                        RelativeTimestamp(timestamp: widget.feedData['post_time']),
+                      ],
+                    ),
                   ),
-                ),
-                widget.feedData['own'].toString() == 'yes' ? GestureDetector(
-                  onTap: (){
-                    return settingButtonAlert(context, [
-                      TextButton(
-                        child: Text('Edit'),
-                        onPressed: (){
-                          Navigator.of(context).pushReplacement(
-                              CustomPageRouteAnimator(child: EditPost(feedData: widget.feedData), direction: 'fromTop')
-                          );
-                        },
-                      ),
-                      TextButton(
-                        child: Text('Delete'),
-                        onPressed: () async{
-                          var dio = Dio();
-                          FormData formData = FormData.fromMap({
-                            'token' : memory.token,
-                            'uuid' : widget.feedData['uuid'],
-                            'post_id' : widget.feedData['post_id']
-                          });
-                          try{
-                            Response response = await dio.post(
-                              'https://linktobd.com/appapi/delete_post',
-                              data: formData,
+                  widget.feedData['own'].toString() == 'yes' ? GestureDetector(
+                    onTap: (){
+                      return settingButtonAlert(context, [
+                        TextButton(
+                          child: Text('Edit'),
+                          onPressed: (){
+                            Navigator.of(context).pushReplacement(
+                                CustomPageRouteAnimator(child: EditPost(feedData: widget.feedData), direction: 'fromTop')
                             );
-                            var respond = response.data;
-                            if (response.statusCode == 200) {
-                              if (respond['success'].toString() == 'yes') {
-                                showAlertDialog(context, 'Post Remove Successfully.', 'Delete Complete');
-                                Future.delayed(const Duration(seconds: 1)).then((val) {
-                                  Navigator.pushReplacementNamed(context, '/feed');
-                                });
+                          },
+                        ),
+                        TextButton(
+                          child: Text('Delete'),
+                          onPressed: () async{
+                            var dio = Dio();
+                            FormData formData = FormData.fromMap({
+                              'token' : memory.token,
+                              'uuid' : widget.feedData['uuid'],
+                              'post_id' : widget.feedData['post_id']
+                            });
+                            try{
+                              Response response = await dio.post(
+                                'https://linktobd.com/appapi/delete_post',
+                                data: formData,
+                              );
+                              var respond = response.data;
+                              if (response.statusCode == 200) {
+                                if (respond['success'].toString() == 'yes') {
+                                  showAlertDialog(context, 'Post Remove Successfully.', 'Delete Complete');
+                                  Future.delayed(const Duration(seconds: 1)).then((val) {
+                                    Navigator.pushReplacementNamed(context, '/feed');
+                                  });
+                                }
                               }
+                            }catch (e) {
+                              showAlertDialog(context, 'An error occurred. Please try again. ${e.toString()}', '');
                             }
-                          }catch (e) {
-                            showAlertDialog(context, 'An error occurred. Please try again. ${e.toString()}', '');
-                          }
-                        },
-                      )
-                    ]);
-                  },
-                  child: Icon(Icons.settings),
-                ) : Container()
-              ],
+                          },
+                        )
+                      ]);
+                    },
+                    child: Icon(Icons.settings),
+                  ) : Container()
+                ],
+              ),
             ),
           ),
           if(widget.feedData['post_text'] != null && widget.feedData['post_text'].isNotEmpty)

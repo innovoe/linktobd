@@ -5,6 +5,7 @@ import 'package:link2bd/view/create_post.dart';
 import 'package:link2bd/view/home.dart';
 import 'package:link2bd/view/login.dart';
 import 'package:link2bd/view/messages.dart';
+import 'package:link2bd/view/notifications.dart';
 import 'package:link2bd/view/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:link2bd/view/init_router.dart';
@@ -14,9 +15,15 @@ import 'package:link2bd/view/my_profile.dart';
 import 'package:link2bd/view/platform_home.dart';
 import 'package:link2bd/view/feed.dart';
 import 'package:link2bd/view/create_password.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:timezone/data/latest.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// Define a global RouteObserver
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 const primaryColor = Color(0xFFB533F1);
 const secondaryColor = Color(0xFFF039B6);
@@ -24,8 +31,14 @@ const secondaryColor = Color(0xFFF039B6);
 @pragma('vm:entry-point')
 Future _firebaseBackgroundMessage(RemoteMessage message) async {
   if(message.notification != null){
-    print('notification received ${message.notification!.body}');
+    // print('notification received ${message.notification!.body}');
   }
+}
+
+Future<void> setupLocalTimezone() async {
+  final String timezoneName = await FlutterNativeTimezone.getLocalTimezone();
+  tz.setLocalLocation(tz.getLocation(timezoneName));
+  print("Local timezone is set to: $timezoneName");
 }
 
 void main() async{
@@ -36,7 +49,11 @@ void main() async{
   NotificationServices notificationServices = NotificationServices();
   notificationServices.requestNotificationPermission();
   FirebaseMessaging.onBackgroundMessage((message) => _firebaseBackgroundMessage(message));
+  tzdata.initializeTimeZones();
+  await setupLocalTimezone();
   return runApp(MaterialApp(
+    navigatorObservers: [routeObserver],
+    navigatorKey: navigatorKey,
     theme: lightTheme,
     darkTheme: darkTheme,
     themeMode: ThemeMode.system,
@@ -54,6 +71,7 @@ void main() async{
       '/create_password' : (context) => CreatePassword(),
       '/create_post' : (context) => CreatePost(),
       '/browse_people' : (context) => BrowsePeople(keyIndex: 0),
+      '/notifications' : (context) => Notifications()
     }
   ));
 }

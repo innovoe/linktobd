@@ -21,6 +21,15 @@ class ChatModel{
     update();
   }
 
+
+  void stopUpdating(){
+    keepUpdating = false;
+  }
+
+  void startUpdating(){
+    keepUpdating = true;
+  }
+
   Future<void> update() async{
     if(keepUpdating){
       Dio dio = Dio();
