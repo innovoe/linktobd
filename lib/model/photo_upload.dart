@@ -11,7 +11,7 @@ class PhotoUpload{
       largeImage!.path,
       quality: 25
     );
-    Directory largeImageDirectory = Directory(largeImage!.path);
+    Directory largeImageDirectory = Directory(largeImage.path);
     largeImageDirectory.deleteSync(recursive: true);
     return compressFile;
   }

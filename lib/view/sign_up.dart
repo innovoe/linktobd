@@ -10,7 +10,7 @@ import 'package:link2bd/model/photo_upload.dart';
 import 'package:dio/dio.dart';
 
 class SignUp extends StatefulWidget {
-  SignUp({Key? key}) : super(key: key);
+  const SignUp({Key? key}) : super(key: key);
 
   @override
   _SignUpState createState() => _SignUpState();
@@ -381,91 +381,91 @@ class _SignUpState extends State<SignUp> {
     // Validate photo
     if (selectedImage == null) {
       showAlertDialog(context, 'Please upload a photo.');
-      introKey.currentState?.controller?.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate birth date
     if (dateOfBirth == DateTime.now()) {
       showAlertDialog(context, 'Please select your birth date.');
-      introKey.currentState?.controller?.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate height
     if (selectedHeight == null || selectedHeight!.isEmpty) {
       showAlertDialog(context, 'Please select your height.');
-      introKey.currentState?.controller?.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate full name
     if (!isValidName(fullNameController.text)) {
       showAlertDialog(context, 'Full name is mandatory.');
-      introKey.currentState?.controller?.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate nickname
     if (!isValidName(nickNameController.text)) {
       showAlertDialog(context, 'Nickname is mandatory.');
-      introKey.currentState?.controller?.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate email
     if (!isValidEmail(emailController.text)) {
       showAlertDialog(context, 'Valid email is mandatory.');
-      introKey.currentState?.controller?.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate phone
     if (phoneController.text.isEmpty) {
       showAlertDialog(context, 'Phone number is mandatory.');
-      introKey.currentState?.controller?.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate gender
     if (selectedGender == null || selectedGender!.isEmpty) {
       showAlertDialog(context, 'Please select a gender.');
-      introKey.currentState?.controller?.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate street address
     if (streetAddressController.text.isEmpty) {
       showAlertDialog(context, 'Street Address is mandatory.');
-      introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate city
     if (citySelected == null) {
       showAlertDialog(context, 'City is mandatory.');
-      introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate state
     if (stateSelected == null) {
       showAlertDialog(context, 'State is mandatory.');
-      introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate postal/zip code
     if (postalZipController.text.isEmpty) {
       showAlertDialog(context, 'Postal/Zip code is mandatory.');
-      introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 
     // Validate country
     if (countrySelected == null) {
       showAlertDialog(context, 'Country is mandatory.');
-      introKey.currentState?.controller?.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      introKey.currentState?.controller.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       return false;
     }
 

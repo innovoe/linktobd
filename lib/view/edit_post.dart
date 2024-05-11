@@ -9,11 +9,10 @@ import 'package:introduction_screen/introduction_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:link2bd/model/photo_upload.dart';
 import 'package:path/path.dart' as p;
-import 'package:uuid/uuid.dart';
 
 class EditPost extends StatefulWidget {
   final Map<String, dynamic> feedData;
-  EditPost({Key? key, required this.feedData}) : super(key: key);
+  const EditPost({Key? key, required this.feedData}) : super(key: key);
 
   @override
   _EditPostState createState() => _EditPostState();
@@ -121,7 +120,6 @@ class _EditPostState extends State<EditPost> {
                     height: 50,
                     padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                     child: ElevatedButton(
-                      child: Text('post'),
                       onPressed: buttonDisabled ? null :
                           () async {
                         setState(() {
@@ -181,6 +179,7 @@ class _EditPostState extends State<EditPost> {
                           }
                         }
                       },
+                      child: Text('post'),
                     )
                 ),
                 SizedBox(height: 20),

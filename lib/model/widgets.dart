@@ -56,7 +56,7 @@ void settingButtonAlert(BuildContext context, List<Widget> widgets, {double cont
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      content: Container(
+      content: SizedBox(
         height: containerHeight,
         child: Column(
           children: widgets,

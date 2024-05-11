@@ -11,7 +11,7 @@ import 'package:link2bd/view/private_chat.dart';
 import 'package:link2bd/model/custom_page_route_animator.dart';
 
 class Messages extends StatefulWidget {
-  Messages({super.key});
+  const Messages({super.key});
   @override
   State<Messages> createState() => _MessagesState();
 }

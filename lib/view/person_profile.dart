@@ -5,7 +5,7 @@ import 'package:link2bd/view/private_chat.dart';
 
 class PersonDetails extends StatefulWidget {
   final Map<String, dynamic> personJson;
-  PersonDetails({super.key, required this.personJson});
+  const PersonDetails({super.key, required this.personJson});
 
   @override
   State<PersonDetails> createState() => _PersonDetailsState();

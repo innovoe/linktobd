@@ -6,7 +6,7 @@ class DynamicDropdown extends StatefulWidget {
   final Function(String) onSelected;
 
   // DynamicDropdown({required this.url, required this.onSelected});
-  DynamicDropdown({Key? key, required this.url, required this.onSelected})
+  const DynamicDropdown({Key? key, required this.url, required this.onSelected})
       : super(key: key); // passing key to the super class constructor
 
 

@@ -1,6 +1,5 @@
 // ignore_for_file: must_be_immutable
 
-import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:link2bd/model/custom_page_route_animator.dart';
 import 'package:link2bd/model/memory.dart';
 import 'package:link2bd/model/people_model.dart';
 import 'package:link2bd/model/widgets.dart';
-import 'package:link2bd/view/comment_reply.dart';
 import 'package:link2bd/view/person_profile.dart';
 
 class BrowsePeople extends StatefulWidget {

@@ -43,14 +43,48 @@ Future<void> setupLocalTimezone() async {
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try{
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }catch(e){
+    print("Firebase initialization error: $e");
+  }
+
   NotificationServices notificationServices = NotificationServices();
   notificationServices.requestNotificationPermission();
   FirebaseMessaging.onBackgroundMessage((message) => _firebaseBackgroundMessage(message));
   tzdata.initializeTimeZones();
   await setupLocalTimezone();
+
+  //new code added from mac
+  // Request notification permissions and configure APNS token
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Request permission for notifications
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+    provisional: false,
+  );
+
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print("User granted notification permission.");
+    // Get the token each time the application starts
+    String? token = await messaging.getToken();
+    if (token != null) {
+      print("Firebase messaging token: $token");
+    }
+
+    // Additional configuration for handling background messages
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
+
+  } else {
+    print("User declined or has not accepted permission");
+  }
+  //end new code added from mac
+
   return runApp(MaterialApp(
     navigatorObservers: [routeObserver],
     navigatorKey: navigatorKey,

@@ -16,7 +16,7 @@ class FeedCard extends StatefulWidget {
   VoidCallback setFeedState;
   final Map<String, dynamic> feedData;
 
-  FeedCard({required this.feedData, required this.setFeedState});
+  FeedCard({super.key, required this.feedData, required this.setFeedState});
 
   @override
   State<FeedCard> createState() => _FeedCardState();
@@ -184,9 +184,9 @@ class _FeedCardState extends State<FeedCard> {
         Text('$likeCount ', style: TextStyle(fontSize: 16),),
         GestureDetector(
           child: AnimatedContainer(
-            child: (liked == true) ? Icon(size: 20, Icons.thumb_up, color: Colors.purple) : Icon(size: 20, Icons.thumb_up_alt_outlined),
             duration: Duration(milliseconds: 300),
             transform: Matrix4.diagonal3Values(isAnimatingLike ? 2 : 1.0, isAnimatingLike ? 2 : 1.0, 1.0),
+            child: (liked == true) ? Icon(size: 20, Icons.thumb_up, color: Colors.purple) : Icon(size: 20, Icons.thumb_up_alt_outlined),
           ),
           onTap: () async{
             setState(() {
@@ -226,9 +226,9 @@ class _FeedCardState extends State<FeedCard> {
         Text('$dislikeCount ', style: TextStyle(fontSize: 16),),
         GestureDetector( //dislike
           child: AnimatedContainer(
-            child: (disliked == true) ? Icon(size: 20, Icons.thumb_down, color: Colors.purple) : Icon(size: 20, Icons.thumb_down_alt_outlined),
             duration: Duration(milliseconds: 300),
             transform: Matrix4.diagonal3Values(isAnimatingDislike ? 2 : 1.0, isAnimatingDislike ? 2 : 1.0, 1.0),
+            child: (disliked == true) ? Icon(size: 20, Icons.thumb_down, color: Colors.purple) : Icon(size: 20, Icons.thumb_down_alt_outlined),
           ),
           onTap: () async{
             setState(() {

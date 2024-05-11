@@ -18,7 +18,7 @@ class _FeedState extends State<Feed> {
   int platformIdSelected = 1;
   List<Map<String, dynamic>> feeds = [];
   UniqueKey _uniqueKey = UniqueKey();
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {

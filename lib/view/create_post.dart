@@ -11,7 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 class CreatePost extends StatefulWidget {
-  CreatePost({Key? key}) : super(key: key);
+  const CreatePost({Key? key}) : super(key: key);
 
   @override
   _CreatePostState createState() => _CreatePostState();
@@ -88,7 +88,6 @@ class _CreatePostState extends State<CreatePost> {
                     height: 50,
                     padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                     child: ElevatedButton(
-                      child: Text('post'),
                       onPressed: buttonDisabled ? null :
                           () async {
                         setState(() {
@@ -148,6 +147,7 @@ class _CreatePostState extends State<CreatePost> {
                           }
                         }
                       },
+                      child: Text('post'),
                     )
                 ),
                 SizedBox(height: 20),

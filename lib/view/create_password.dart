@@ -4,7 +4,7 @@ import 'package:introduction_screen/introduction_screen.dart';
 import 'package:dio/dio.dart';
 
 class CreatePassword extends StatefulWidget {
-  CreatePassword({Key? key}) : super(key: key);
+  const CreatePassword({Key? key}) : super(key: key);
 
   @override
   _CreatePasswordState createState() => _CreatePasswordState();

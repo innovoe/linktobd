@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class ImageGrid extends StatelessWidget {
   final List<File> imageFiles;
 
-  ImageGrid({required this.imageFiles});
+  const ImageGrid({super.key, required this.imageFiles});
 
   @override
   Widget build(BuildContext context) {
