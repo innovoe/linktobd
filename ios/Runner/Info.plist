@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+    <key>NSPhotoLibraryUsageDescription</key>
+        <string>This app requires access to the photo library to save and manage your photos.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>This app requires access to your location to provide navigation and location-based services at all times.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+        <string>This app requires access to your location to provide navigation and location-based services while the app is in use.</string>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
 </dict>
 </plist>
